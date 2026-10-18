@@ -1,0 +1,68 @@
+{
+  "$schema": "https://seuraphotos.app/schema/edit/1.0.json",
+  "format": "seura-edit",
+  "formatVersion": "1.0",
+  "writer": {
+    "app": "Seura Photos",
+    "version": "1.0.0"
+  },
+  "modified": "2026-10-18T09:15:48Z",
+  "photo": {
+    "file": "IMG_2207.jpg",
+    "size": 2905318,
+    "sha256": "c2a91f0e5b7d3c4a6e8f1b2d9c0a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
+    "width": 4032,
+    "height": 3024
+  },
+  "operations": [
+    {
+      "id": "seura.exposure",
+      "version": 1,
+      "params": {
+        "ev": 0.5
+      }
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-10-18T09:14:10Z",
+      "label": "Exposure",
+      "changes": [
+        {
+          "op": "seura.exposure",
+          "from": null,
+          "to": {
+            "ev": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-10-18T09:14:52Z",
+      "label": "Contrast",
+      "undone": true,
+      "changes": [
+        {
+          "op": "seura.contrast",
+          "from": null,
+          "to": {
+            "amount": 30
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-10-18T09:15:20Z",
+      "label": "Saturation",
+      "changes": [
+        {
+          "op": "seura.saturation",
+          "from": null,
+          "to": {
+            "amount": 15
+          }
+        }
+      ]
+    }
+  ]
+}

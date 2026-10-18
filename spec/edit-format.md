@@ -156,13 +156,17 @@ Each record is one user action, which may change several things at once (pasting
 - **`at`**: when it happened, UTC, ISO 8601.
 - **`label`**: a short description for menus, such as "Contrast" or "Paste edits".
 - **`changes`**: a list of changes. An operation change is `{ "op": <id>, "from": <params or null>, "to": <params or null> }`, where null means the operation was absent. A tag or rating change is `{ "field": "tags" or "rating", "from": <value>, "to": <value> }`.
+- **`undone`**: `true` if the record has been undone and not redone. Absent otherwise. Undone records are always the last records in the array, so redo works after the app is closed and reopened.
 
 Rules:
 
 - One record per completed action. Dragging a slider produces one record when the drag ends, not one per movement.
 - Writers SHOULD cap the history; Seura Photos keeps the last 50 records and drops the oldest.
-- Undo applies a record's `from` values; redo applies its `to` values. Records undone and not redone are discarded when a new change is made.
-- **Consistency check.** Before undoing a record, a reader MUST confirm that the current state matches that record's `to` values. If it doesn't, another app changed the file without updating the history; the reader MUST discard that record and all older ones rather than apply them.
+- **Undo** applies the `from` values of the last record that isn't undone, and marks it `"undone": true`.
+- **Redo** applies the `to` values of the first undone record, and removes its `undone` flag.
+- **A new change** discards every undone record, then appends its own record. Undone records count toward the cap.
+- **Consistency check.** Before undoing a record, a reader MUST confirm that the current state matches that record's `to` values; before redoing one, that it matches the record's `from` values. If it doesn't, another app changed the file without updating the history. On a failed undo check, the reader MUST discard that record and all older ones; on a failed redo check, it MUST discard all undone records. It never applies a record that fails the check.
+- A reader that finds a change it doesn't understand in a record (for example, a change type added in a later minor version) MUST treat that record as failing the consistency check.
 - Writers that change the state without recording history SHOULD remove the `history` field, so stale history is never applied.
 
 ## Extensibility and versioning
@@ -175,8 +179,16 @@ The format has three ways to grow, each designed so that older readers keep work
 
 **New format versions.** `formatVersion` is `"major.minor"`.
 
-- A minor version only adds things: new optional fields or new core operations. Readers of an older minor version can still read the file, ignoring what they don't know.
+- A minor version only adds things: new optional fields, new core operations, or new kinds of history change. Readers of an older minor version can still read the file, ignoring what they don't know.
 - A major version may change existing meaning. A reader MUST NOT write a file whose major version is higher than it supports; it MAY display it, read-only, with a warning.
+
+**Reading a newer minor version.** The schema for a version describes that version exactly, so `schema/1.0.json` rejects a 1.1 file's new fields. A 1.0 reader handling a file with a higher minor version, such as `"1.1"`:
+
+- validates it against the reader schema, [`schema/1.x-reader.json`](../schema/1.x-reader.json), which checks every field 1.0 defines but accepts fields, core operations, and history change types it doesn't know;
+- applies the 1.0 rules to everything it recognizes, and treats an unknown core operation like any other unknown operation (skipped when rendering, kept when saving);
+- when it saves the file, keeps `formatVersion` as it found it and preserves everything it doesn't understand, as for any unknown content.
+
+A file whose `formatVersion` is exactly a version the reader supports is validated against that version's own schema.
 
 **Preserving the unknown.** This rule is what makes the rest work: when a reader saves a file, it MUST keep every unknown operation, field, and extension exactly as found, in place. An app that doesn't understand a plugin's effect still saves it intact, so a user can edit in two apps without one erasing the other's work.
 
@@ -213,13 +225,14 @@ A summary of the obligations, for implementers checking their work.
 - MUST reject files whose `format` isn't `"seura-edit"`, and MUST NOT overwrite a file they can't parse.
 - MUST NOT write a file with a higher major version than they support.
 - MUST render operations in array order and skip disabled ones.
-- MUST run the history consistency check before undoing.
+- MUST run the history consistency check before undoing or redoing.
+- MUST validate a file with a higher minor version against the reader schema, not reject it, and MUST NOT lower its `formatVersion` when saving.
 - SHOULD warn when they skip an operation they can't render, and when the photo's fingerprint doesn't match.
 
 ## Publishing
 
 - **Specification.** This document.
-- **JSON Schema.** [`schema/1.0.json`](../schema/1.0.json), JSON Schema 2020-12, to be served at the stable URL referenced by `$schema`.
+- **JSON Schema.** [`schema/1.0.json`](../schema/1.0.json), JSON Schema 2020-12, served at the stable URL referenced by `$schema`. The reader schema for files with a higher 1.x minor version is [`schema/1.x-reader.json`](../schema/1.x-reader.json).
 - **Conformance tests.** Planned: sample photos, edit files, and expected output images, with a stated tolerance, so another implementation can verify it renders the same result.
 - **Reference implementation.** Seura Photos' own rendering code, kept usable as a standalone library.
 - **Licenses.** This specification under Creative Commons Attribution 4.0 ([LICENSE-SPEC](../LICENSE-SPEC)); the schema, examples, tests, and reference code under Apache 2.0 ([LICENSE](../LICENSE)).
@@ -233,3 +246,5 @@ A summary of the obligations, for implementers checking their work.
 | Crop frame | Defined on the straightened photo, as Lightroom does; to be confirmed by a prototype. |
 | Fingerprint | Full SHA-256 of the file, computed rarely and cached. |
 | Tags and rating in history | Included, so they can be undone. |
+| Redo across sessions | Undone records stay in the history, marked `"undone": true`, until a new change discards them. Found missing while implementing Seura Photos' edit file library. |
+| Files from a newer minor version | Validated against a separate reader schema that checks known fields and accepts unknown ones; `formatVersion` is never lowered on save. Found missing while implementing Seura Photos' edit file library. |

@@ -284,6 +284,7 @@
       "properties": {
         "at": { "type": "string", "format": "date-time" },
         "label": { "type": "string" },
+        "undone": { "description": "Present and true when the record has been undone and not redone. Undone records are always last.", "const": true },
         "changes": {
           "type": "array",
           "minItems": 1,
