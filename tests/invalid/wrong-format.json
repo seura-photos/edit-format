@@ -1,0 +1,11 @@
+{
+  "format": "picasa",
+  "formatVersion": "1.0",
+  "photo": {
+    "file": "a.jpg",
+    "size": 10,
+    "sha256": "4e1c0b9a77d3f2e85a6b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f",
+    "width": 10,
+    "height": 10
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://seuraphotos.app/schema/edit/1.0.json",
+  "format": "seura-edit",
+  "formatVersion": "1.0",
+  "kind": "preset",
+  "name": "Warm Vintage",
+  "writer": { "app": "Seura Photos", "version": "1.0.0" },
+  "modified": "2026-10-17T20:05:00Z",
+  "operations": [
+    { "id": "seura.whiteBalance", "version": 1, "params": { "temperature": 25, "tint": 4 } },
+    { "id": "seura.contrast", "version": 1, "params": { "amount": -10 } },
+    { "id": "seura.saturation", "version": 1, "params": { "amount": -20 } },
+    { "id": "seura.sepia", "version": 1, "params": { "strength": 30 } },
+    { "id": "seura.vignette", "version": 1, "params": { "amount": -35, "size": 55 } }
+  ]
+}
