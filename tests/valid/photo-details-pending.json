@@ -1,0 +1,43 @@
+{
+  "format": "seura-edit",
+  "formatVersion": "1.0",
+  "writer": {
+    "app": "Seura Photos",
+    "version": "1.0.0"
+  },
+  "modified": "2026-10-18T21:05:00Z",
+  "photo": {
+    "file": "20260912_181502.jpg",
+    "size": 3264118
+  },
+  "tags": [
+    "family/kids"
+  ],
+  "rating": 4,
+  "history": [
+    {
+      "at": "2026-10-18T21:04:40Z",
+      "label": "Add tags",
+      "changes": [
+        {
+          "field": "tags",
+          "from": [],
+          "to": [
+            "family/kids"
+          ]
+        }
+      ]
+    },
+    {
+      "at": "2026-10-18T21:05:00Z",
+      "label": "Rating",
+      "changes": [
+        {
+          "field": "rating",
+          "from": 0,
+          "to": 4
+        }
+      ]
+    }
+  ]
+}

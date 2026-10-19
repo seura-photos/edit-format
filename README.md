@@ -19,7 +19,7 @@ The original photo is never modified. Any app that implements this format can re
 | [`schema/1.0.json`](schema/1.0.json) | JSON Schema (2020-12) for format version 1.0. |
 | [`schema/1.x-reader.json`](schema/1.x-reader.json) | Reader schema for files with a newer 1.x minor version: checks the 1.0 fields, accepts the rest. Generated from 1.0.json. |
 | [`examples/`](examples/) | Valid example files: an edited photo, a tag-only file, a photo with undone changes ready to redo, and a preset. |
-| [`tests/valid/`](tests/valid/) | Other files that must be accepted, such as one from a newer minor version. |
+| [`tests/valid/`](tests/valid/) | Other files that must be accepted, such as one from a newer minor version, or one whose photo details are still to be filled in. |
 | [`tests/invalid/`](tests/invalid/) | Files that must be rejected, one rule each. |
 | [`tools/check.py`](tools/check.py) | Validator: the schema plus the rules JSON Schema can't express (operation order, duplicates, tag case, undone records last). |
 | [`tools/make_reader_schema.py`](tools/make_reader_schema.py) | Regenerates the reader schema after a change to 1.0.json. |
