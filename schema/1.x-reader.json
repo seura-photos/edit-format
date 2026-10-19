@@ -146,14 +146,20 @@
       "pattern": "^(?![\\s/])(?!.*//)(?!.*[\\s/]$).+$"
     },
     "photo": {
+      "description": "sha256, width, and height need the photo's contents and may be absent until a writer reads it (for example, a cloud-only photo that was tagged).",
       "type": "object",
       "required": [
         "file",
-        "sha256",
-        "size",
-        "width",
-        "height"
+        "size"
       ],
+      "dependentRequired": {
+        "width": [
+          "height"
+        ],
+        "height": [
+          "width"
+        ]
+      },
       "properties": {
         "file": {
           "type": "string",

@@ -1,6 +1,6 @@
 # Seura Edit Format, version 1.0
 
-Status: draft · Last updated: 2026-10-17
+Status: draft · Last updated: 2026-10-18
 
 This document defines the file format Seura Photos uses to store non-destructive edits, tags, and ratings beside each photo. It is written for anyone implementing the format, including other apps.
 
@@ -83,14 +83,16 @@ The hash is shortened here, and the history is too; a real file would include th
 The `photo` object ties the edit file to its photo and lets readers detect when the two have been separated or the photo has changed.
 
 - **`file`** (required): the photo's file name, without a path.
-- **`sha256`** (required): a SHA-256 hash of the photo file's bytes, as lowercase hex. This is the fingerprint.
 - **`size`** (required): the photo file's size in bytes.
-- **`width`, `height`** (required): pixel dimensions after applying the photo's own orientation metadata.
+- **`sha256`** (optional): a SHA-256 hash of the photo file's bytes, as lowercase hex. This is the fingerprint.
+- **`width`, `height`** (optional, both or neither): pixel dimensions after applying the photo's own orientation metadata.
+
+The fingerprint and dimensions need the photo's contents. A photo in a cloud-synced folder may exist only in the cloud until something reads it, and reading it downloads the whole file, so a writer may create an edit file (say, to tag or rate a photo) without them. A writer that reads the photo later SHOULD fill them in. A writer MUST NOT store a guessed or placeholder value: a field is either correct or absent.
 
 Readers use the fingerprint in two ways:
 
-- **Reattaching.** If the named file is missing, a photo in the same folder with a matching fingerprint and no edit file of its own is the renamed original.
-- **Detecting changes.** If the named file exists but its fingerprint differs, the original was modified by something else. Readers SHOULD still apply the edits and SHOULD warn the user that results may be off.
+- **Reattaching.** If the named file is missing, a photo in the same folder with a matching fingerprint and no edit file of its own is the renamed original. Without a fingerprint, an edit file belongs to its photo by name only, and a renamed photo can't be matched back to it.
+- **Detecting changes.** If the named file exists but its fingerprint differs, the original was modified by something else. Readers SHOULD still apply the edits and SHOULD warn the user that results may be off. Without a fingerprint, a reader MAY compare `size` instead, which catches most changes but not all.
 
 For speed, readers MAY first compare `size` and the file's modification time, and compute the hash only when those suggest a change.
 
@@ -217,6 +219,7 @@ A summary of the obligations, for implementers checking their work.
 - MUST keep `operations` in canonical render order, with each operation type at most once.
 - MUST preserve unknown operations, fields, and extensions exactly as read.
 - SHOULD round numbers to at most four decimal places, so files stay readable and stable.
+- SHOULD fill in a missing `sha256`, `width`, and `height` when they read the photo, and MUST NOT store guessed values.
 - SHOULD delete the edit file when the photo has no operations, tags, or rating, rather than leave an empty one.
 - SHOULD update `modified` and `writer` on every write.
 
@@ -247,4 +250,5 @@ A summary of the obligations, for implementers checking their work.
 | Fingerprint | Full SHA-256 of the file, computed rarely and cached. |
 | Tags and rating in history | Included, so they can be undone. |
 | Redo across sessions | Undone records stay in the history, marked `"undone": true`, until a new change discards them. Found missing while implementing Seura Photos' edit file library. |
+| Photo fingerprint and dimensions | Optional, filled in when the photo is first read, so a cloud-only photo can be tagged or rated without downloading it. Raised by Nevada while designing support for cloud-synced folders. |
 | Files from a newer minor version | Validated against a separate reader schema that checks known fields and accepts unknown ones; `formatVersion` is never lowered on save. Found missing while implementing Seura Photos' edit file library. |
