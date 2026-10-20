@@ -206,7 +206,7 @@ A file whose `formatVersion` is exactly a version the reader supports is validat
 
 A preset is an edit file that isn't tied to a photo. It uses the same format with these differences:
 
-- File name: the preset's name plus `.seura-preset.json`. Seura Photos keeps presets in `Documents/Seura Photos/Presets`.
+- File name: the preset's name plus `.seura-preset.json`. Seura Photos keeps presets in a `Seura Photos/Presets` folder in the user's home folder.
 - `"kind": "preset"` and a `"name"` field are added.
 - `photo`, `tags`, `rating`, and `history` are absent.
 - `operations` normally excludes the geometry and retouch stages, since crops and red-eye belong to a single photo, but MAY include them.
