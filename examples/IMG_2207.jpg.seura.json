@@ -12,10 +12,12 @@
     "height": 3024
   },
   "operations": [
-    { "id": "seura.exposure", "version": 1, "params": { "ev": 0.5 } }
+    { "id": "seura.exposure", "version": 1, "params": { "ev": 0.5 } },
+    { "id": "seura.shadows", "version": 1, "params": { "amount": 35 } }
   ],
   "history": [
     { "at": "2026-10-18T09:14:10Z", "label": "Exposure", "changes": [ { "op": "seura.exposure", "from": null, "to": { "ev": 0.5 } } ] },
+    { "at": "2026-10-18T09:14:31Z", "label": "Shadows", "changes": [ { "op": "seura.shadows", "from": null, "to": { "amount": 35 } } ] },
     { "at": "2026-10-18T09:14:52Z", "label": "Contrast", "undone": true, "changes": [ { "op": "seura.contrast", "from": null, "to": { "amount": 30 } } ] },
     { "at": "2026-10-18T09:15:20Z", "label": "Saturation", "undone": true, "changes": [ { "op": "seura.saturation", "from": null, "to": { "amount": 15 } } ] }
   ]
