@@ -276,6 +276,12 @@
           "$ref": "#/$defs/opWhiteBalance"
         },
         {
+          "$ref": "#/$defs/opHighlights"
+        },
+        {
+          "$ref": "#/$defs/opShadows"
+        },
+        {
           "$ref": "#/$defs/opContrast"
         },
         {
@@ -525,6 +531,66 @@
                 "maximum": 100
               },
               "tint": {
+                "type": "number",
+                "minimum": -100,
+                "maximum": 100
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "opHighlights": {
+      "if": {
+        "properties": {
+          "id": {
+            "const": "seura.highlights"
+          },
+          "version": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "params": {
+            "type": "object",
+            "required": [
+              "amount"
+            ],
+            "properties": {
+              "amount": {
+                "type": "number",
+                "minimum": -100,
+                "maximum": 100
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "opShadows": {
+      "if": {
+        "properties": {
+          "id": {
+            "const": "seura.shadows"
+          },
+          "version": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "params": {
+            "type": "object",
+            "required": [
+              "amount"
+            ],
+            "properties": {
+              "amount": {
                 "type": "number",
                 "minimum": -100,
                 "maximum": 100

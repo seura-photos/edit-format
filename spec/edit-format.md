@@ -115,10 +115,10 @@ The `operations` array holds the current edits. Each entry is an object:
 | --- | --- |
 | 1. Geometry | `seura.orient`, `seura.straighten`, `seura.crop` |
 | 2. Retouch | `seura.redEye` |
-| 3. Tone and color | `seura.exposure`, `seura.whiteBalance`, `seura.contrast`, `seura.saturation` |
+| 3. Tone and color | `seura.exposure`, `seura.whiteBalance`, `seura.highlights`, `seura.shadows`, `seura.contrast`, `seura.saturation` |
 | 4. Effects | `seura.blackAndWhite`, `seura.sepia`, `seura.vignette` |
 
-Geometry stays in this order because each step defines the frame for the next: the crop is drawn on the rotated, straightened photo. Red-eye comes before tone and color so it works on the original colors.
+Geometry stays in this order because each step defines the frame for the next: the crop is drawn on the rotated, straightened photo. Red-eye comes before tone and color so it works on the original colors. Highlights and shadows come after exposure and white balance, so they work on the corrected brightness and color, and before contrast, which shapes the overall result.
 
 **Coordinates.** Positions and sizes are fractions from 0 to 1 of the frame they refer to, so edits stay valid at any resolution. Red-eye regions are measured on the photo after its orientation metadata is applied but before any geometry operations, so they stay on the eyes when the crop changes.
 
@@ -134,13 +134,17 @@ All core operations are version 1. When every setting of an operation is neutral
 | `seura.straighten` | Geometry | `angle`: −45 to 45 degrees | Rotation about the center, clockwise positive. |
 | `seura.crop` | Geometry | `x`, `y`, `width`, `height`: 0 to 1; `aspect`: a ratio such as `"4:3"`, or null | A rectangle on the oriented, straightened photo. `aspect` records the user's ratio lock for editing and doesn't affect rendering. |
 | `seura.redEye` | Retouch | `regions`: list of `{x, y, radius}`, 0 to 1 | Each circle darkens and desaturates red pupils inside it. Radius is a fraction of the photo's shorter side. |
-| `seura.exposure` | Tone | `ev`: −4 to 4 | Brightness in photographic stops: multiplies linear light by 2^ev. |
+| `seura.exposure` | Tone | `ev`: −4 to 4 | Brightness in photographic stops: multiplies linear light by 2^ev. Apps may label it "Brightness"; Seura Photos does. |
 | `seura.whiteBalance` | Tone | `temperature`, `tint`: −100 to 100 | Relative shifts from the photo as shot: temperature toward blue or amber, tint toward green or magenta. |
+| `seura.highlights` | Tone | `amount`: −100 to 100 | Adjusts the bright areas of the photo, with little effect on dark ones. Negative recovers detail in bright areas such as skies; positive brightens them. A neighborhood operation (below). |
+| `seura.shadows` | Tone | `amount`: −100 to 100 | Adjusts the dark areas, with little effect on bright ones. Positive lifts detail out of shadows, such as a backlit face; negative deepens them. A neighborhood operation (below). |
 | `seura.contrast` | Tone | `amount`: −100 to 100 | An S-shaped curve around middle gray. |
 | `seura.saturation` | Tone | `amount`: −100 to 100 | −100 removes all color. |
 | `seura.blackAndWhite` | Effects | `strength`: 0 to 100 | Blends toward a luminance-only image. |
 | `seura.sepia` | Effects | `strength`: 0 to 100 | Blends toward a warm brown monochrome. |
 | `seura.vignette` | Effects | `amount`: −100 to 100; `size`: 0 to 100 | Negative darkens the edges, positive lightens them. Measured on the cropped frame. |
+
+**Neighborhood operations.** Most operations change each pixel based on that pixel alone. `seura.highlights` and `seura.shadows` also depend on the brightness of the area around each pixel, so that a bright sky can be darkened without flattening the clouds in it, and a face lifted without graying the black of a jacket beside it. The size of that area is defined as a fraction of the photo's dimensions, never in pixels, so a preview rendered at screen resolution matches the full-resolution export. The exact method, its radius, and its edge handling are part of the formulas appendix.
 
 ## Tags and rating
 
@@ -251,4 +255,5 @@ A summary of the obligations, for implementers checking their work.
 | Tags and rating in history | Included, so they can be undone. |
 | Redo across sessions | Undone records stay in the history, marked `"undone": true`, until a new change discards them. Found missing while implementing Seura Photos' edit file library. |
 | Photo fingerprint and dimensions | Optional, filled in when the photo is first read, so a cloud-only photo can be tagged or rated without downloading it. Raised by Nevada while designing support for cloud-synced folders. |
+| Highlights and shadows | Added to version 1.0 before release, as `seura.highlights` and `seura.shadows` in the tone stage. Suggested by a friend of the project; Picasa had both. `seura.exposure` keeps its name, since its value is in photographic stops; apps label the slider as they like. |
 | Files from a newer minor version | Validated against a separate reader schema that checks known fields and accepts unknown ones; `formatVersion` is never lowered on save. Found missing while implementing Seura Photos' edit file library. |

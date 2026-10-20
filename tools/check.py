@@ -43,6 +43,8 @@ CORE_ORDER = [
     ("seura.redEye", "retouch"),
     ("seura.exposure", "tone"),
     ("seura.whiteBalance", "tone"),
+    ("seura.highlights", "tone"),
+    ("seura.shadows", "tone"),
     ("seura.contrast", "tone"),
     ("seura.saturation", "tone"),
     ("seura.blackAndWhite", "effects"),
