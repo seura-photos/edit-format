@@ -6,7 +6,7 @@ Each file gives the formula in words and pseudocode, and points to its test vect
 
 ## Conventions
 
-**Working space.** Every operation takes and returns colors as linear light with Display P3 primaries and the D65 white point: three numbers, red, green and blue, where 0 is black and 1 is the brightest white the photo holds. Values aren't clipped between operations: exposure and contrast can take a color above 1, and the next operation sees it as it is. Values below 0 occur only where a file says so. How the result is encoded and clipped for a screen or a file is up to the app, not the format.
+**Working space.** Every operation takes and returns colors as linear light with Display P3 primaries and the D65 white point: three numbers, red, green and blue, where 0 is black and 1 is the photo's reference white. Values aren't clipped between operations: exposure and contrast can take a color above 1, and the next operation sees it as it is. Components can be below 0 for colors outside Display P3, from a wider-gamut original. Every operation accepts them, and a formula says if it can produce them itself. How the result is encoded and clipped for a screen or a file is up to the app, not the format.
 
 **Luminance.** Where a formula needs a color's luminance, it's
 
