@@ -41,3 +41,4 @@ with `absolute` 0.0001 and `relative` 0.001 throughout. That's far finer than an
 | `seura.exposure` | [seura.exposure.md](seura.exposure.md) |
 | `seura.whiteBalance` | [seura.whiteBalance.md](seura.whiteBalance.md) |
 | `seura.contrast` | [seura.contrast.md](seura.contrast.md) |
+| `seura.saturation` | [seura.saturation.md](seura.saturation.md) |
