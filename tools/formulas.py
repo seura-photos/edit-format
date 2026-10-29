@@ -78,6 +78,14 @@ def contrast(color, params):
     return [v * scale for v in color]
 
 
+def saturation(color, params):
+    """seura.saturation: each channel away from the luminance by
+    1 + amount/100, with nothing clipped."""
+    y = luminance(color)
+    s = 1 + params["amount"] / 100
+    return [y + (v - y) * s for v in color]
+
+
 # Each operation: its formula, and the params its vectors use.
 OPERATIONS = {
     "seura.exposure": (exposure, [{"ev": ev} for ev in (-4, -1.5, 0.3, 1, 4)]),
@@ -89,6 +97,7 @@ OPERATIONS = {
         ],
     ),
     "seura.contrast": (contrast, [{"amount": amount} for amount in (-100, -40, 25, 60, 100)]),
+    "seura.saturation": (saturation, [{"amount": amount} for amount in (-100, -50, 30, 60, 100)]),
 }
 
 
