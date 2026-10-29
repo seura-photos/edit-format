@@ -23,6 +23,9 @@ The original photo is never modified. Any app that implements this format can re
 | [`tests/invalid/`](tests/invalid/) | Files that must be rejected, one rule each. |
 | [`tools/check.py`](tools/check.py) | Validator: the schema plus the rules JSON Schema can't express (operation order, duplicates, tag case, undone records last). |
 | [`tools/make_reader_schema.py`](tools/make_reader_schema.py) | Regenerates the reader schema after a change to 1.0.json. |
+| [`spec/formulas/`](spec/formulas/README.md) | The formulas appendix: each core operation's exact math, one file per operation, as they're written. |
+| [`tests/formulas/`](tests/formulas/) | Test vectors for the formulas: input colors, params, and expected output. |
+| [`tools/formulas.py`](tools/formulas.py) | Regenerates the test vectors after a formula changes. |
 
 Planned: conformance tests with sample photos and expected output images, so other implementations can verify they render identically.
 

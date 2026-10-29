@@ -4,7 +4,7 @@
 Usage:
     python tools/check.py FILE...        validate the given files
     python tools/check.py --self-test    validate examples/ and tests/valid/ (must pass) and tests/invalid/ (must fail),
-                                         and confirm schema/1.x-reader.json is up to date
+                                         and confirm schema/1.x-reader.json and tests/formulas/ are up to date
 
 Files whose formatVersion is exactly "1.0" are checked against schema/1.0.json; files with a higher
 1.x minor version against schema/1.x-reader.json (see the spec's "Reading a newer minor version").
@@ -21,6 +21,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
+import formulas  # noqa: E402
 import make_reader_schema  # noqa: E402
 
 SUPPORTED_MINOR = 0  # this checker implements format 1.0
@@ -132,6 +133,12 @@ def self_test():
         print("FAIL                     schema/1.x-reader.json is out of date; run tools/make_reader_schema.py")
     else:
         print("ok                       schema/1.x-reader.json is up to date")
+    out_of_date = formulas.stale()
+    for operation in out_of_date:
+        failed = True
+        print(f"FAIL                     tests/formulas/{operation}.json is out of date; run tools/formulas.py")
+    if not out_of_date:
+        print("ok                       tests/formulas/ is up to date")
     valid = sorted((ROOT / "examples").glob("*.json")) + sorted((ROOT / "tests" / "valid").glob("*.json"))
     for path in valid:
         errors = check_file(path)
