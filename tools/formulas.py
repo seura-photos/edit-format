@@ -59,6 +59,25 @@ def white_balance(color, params):
     return [v * g / k for v, g in zip(color, gains)]
 
 
+def contrast(color, params):
+    """seura.contrast: an S-curve on luminance raised to 1/2.2, around middle
+    gray, with slope 2^(amount/100) there."""
+    y = luminance(color)
+    if y <= 0:
+        return list(color)
+    x = y ** (1 / 2.2)
+    if x >= 1:
+        return list(color)
+    g = 2.0 ** (params["amount"] / 100)
+    p = 0.18 ** (1 / 2.2)
+    if x < p:
+        curved = p * (x / p) ** g
+    else:
+        curved = 1 - (1 - p) * ((1 - x) / (1 - p)) ** g
+    scale = curved ** 2.2 / y
+    return [v * scale for v in color]
+
+
 # Each operation: its formula, and the params its vectors use.
 OPERATIONS = {
     "seura.exposure": (exposure, [{"ev": ev} for ev in (-4, -1.5, 0.3, 1, 4)]),
@@ -69,6 +88,7 @@ OPERATIONS = {
             for temperature, tint in ((-100, 0), (100, 0), (0, -100), (0, 100), (35, -20), (-60, 45))
         ],
     ),
+    "seura.contrast": (contrast, [{"amount": amount} for amount in (-100, -40, 25, 60, 100)]),
 }
 
 
