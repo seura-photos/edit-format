@@ -39,3 +39,4 @@ with `absolute` 0.0001 and `relative` 0.001 throughout. That's far finer than an
 | Operation | File |
 | --- | --- |
 | `seura.exposure` | [seura.exposure.md](seura.exposure.md) |
+| `seura.whiteBalance` | [seura.whiteBalance.md](seura.whiteBalance.md) |

@@ -41,9 +41,34 @@ def exposure(color, params):
     return [v * scale for v in color]
 
 
+# spec/formulas/README.md, "Luminance".
+LUMINANCE = (0.2289746, 0.6917385, 0.0792869)
+
+
+def luminance(color):
+    return sum(weight * v for weight, v in zip(LUMINANCE, color))
+
+
+def white_balance(color, params):
+    """seura.whiteBalance: a gain on each channel, scaled so gray keeps its
+    luminance."""
+    t = params["temperature"] / 100
+    n = params["tint"] / 100
+    gains = [2.0 ** (t / 2), 2.0 ** (-n / 2), 2.0 ** (-t / 2)]
+    k = luminance(gains)
+    return [v * g / k for v, g in zip(color, gains)]
+
+
 # Each operation: its formula, and the params its vectors use.
 OPERATIONS = {
     "seura.exposure": (exposure, [{"ev": ev} for ev in (-4, -1.5, 0.3, 1, 4)]),
+    "seura.whiteBalance": (
+        white_balance,
+        [
+            {"temperature": temperature, "tint": tint}
+            for temperature, tint in ((-100, 0), (100, 0), (0, -100), (0, 100), (35, -20), (-60, 45))
+        ],
+    ),
 }
 
 
