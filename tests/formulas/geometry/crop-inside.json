@@ -1,0 +1,25 @@
+{
+  "vectors": "geometry/crop-inside",
+  "tolerance": {
+    "absolute": 0.0001,
+    "relative": 0.001
+  },
+  "cases": [
+    {"frame": [6000, 4000], "angle": 0, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 1.0, "fitted": {"x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0}},
+    {"frame": [6000, 4000], "angle": 0, "crop": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}, "scale": 1.0, "fitted": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}},
+    {"frame": [6000, 4000], "angle": 0, "crop": {"x": 0.45, "y": 0.0, "width": 0.55, "height": 1}, "scale": 1.0, "fitted": {"x": 0.45, "y": 3.33066907e-16, "width": 0.55, "height": 1.0}},
+    {"frame": [6000, 4000], "angle": 2.5, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 0.939428203, "fitted": {"x": 0.0302858983, "y": 0.0302858983, "width": 0.939428203, "height": 0.939428203}},
+    {"frame": [6000, 4000], "angle": 2.5, "crop": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}, "scale": 1.0, "fitted": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}},
+    {"frame": [6000, 4000], "angle": 2.5, "crop": {"x": 0.45, "y": 0.0, "width": 0.55, "height": 1}, "scale": 0.937705149, "fitted": {"x": 0.467131084, "y": 0.0311474257, "width": 0.515737832, "height": 0.937705149}},
+    {"frame": [6000, 4000], "angle": -7.3, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 0.845672144, "fitted": {"x": 0.0771639279, "y": 0.0771639279, "width": 0.845672144, "height": 0.845672144}},
+    {"frame": [6000, 4000], "angle": -7.3, "crop": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}, "scale": 1.0, "fitted": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}},
+    {"frame": [6000, 4000], "angle": -7.3, "crop": {"x": 0.45, "y": 0.0, "width": 0.55, "height": 1}, "scale": 0.833603017, "fitted": {"x": 0.49575917, "y": 0.0831984913, "width": 0.45848166, "height": 0.833603017}},
+    {"frame": [6000, 4000], "angle": 30, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 0.618802154, "fitted": {"x": 0.190598923, "y": 0.190598923, "width": 0.618802154, "height": 0.618802154}},
+    {"frame": [6000, 4000], "angle": 30, "crop": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}, "scale": 1.0, "fitted": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}},
+    {"frame": [6000, 4000], "angle": 30, "crop": {"x": 0.45, "y": 0.0, "width": 0.55, "height": 1}, "scale": 0.518175077, "fitted": {"x": 0.582501854, "y": 0.240912461, "width": 0.284996293, "height": 0.518175077}},
+    {"frame": [6000, 4000], "angle": 45, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 0.565685425, "fitted": {"x": 0.217157288, "y": 0.217157288, "width": 0.565685425, "height": 0.565685425}},
+    {"frame": [6000, 4000], "angle": 45, "crop": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}, "scale": 1.0, "fitted": {"x": 0.1, "y": 0.2, "width": 0.5, "height": 0.4}},
+    {"frame": [6000, 4000], "angle": 45, "crop": {"x": 0.45, "y": 0.0, "width": 0.55, "height": 1}, "scale": 0.405048527, "fitted": {"x": 0.613611655, "y": 0.297475736, "width": 0.22277669, "height": 0.405048527}},
+    {"frame": [3000, 4000], "angle": 10, "crop": {"x": 0, "y": 0, "width": 1, "height": 1}, "scale": 0.822139455, "fitted": {"x": 0.0889302726, "y": 0.0889302726, "width": 0.822139455, "height": 0.822139455}}
+  ]
+}
