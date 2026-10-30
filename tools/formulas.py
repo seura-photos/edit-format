@@ -108,6 +108,41 @@ def shadows(color, params, base):
     return [v * 2.0 ** gain for v in color]
 
 
+def black_and_white(color, params):
+    """seura.blackAndWhite: each channel toward the luminance by
+    strength/100."""
+    y = luminance(color)
+    k = params["strength"] / 100
+    return [v + (y - v) * k for v in color]
+
+
+# Sepia's tone: a warm brown, scaled so its luminance is 1.
+SEPIA_TONE = (1.25, 0.97, 0.56)
+SEPIA = [v / luminance(SEPIA_TONE) for v in SEPIA_TONE]
+
+
+def sepia(color, params):
+    """seura.sepia: each channel toward the luminance in sepia's tone by
+    strength/100."""
+    y = luminance(color)
+    k = params["strength"] / 100
+    return [v + (y * tone - v) * k for v, tone in zip(color, SEPIA)]
+
+
+def vignette(color, params, position):
+    """seura.vignette: by how far the pixel is from the cropped frame's
+    center, out to its corners, toward black (negative) or white
+    (positive)."""
+    d = [2 * position[0] - 1, 2 * position[1] - 1]
+    r = (d[0] ** 2 + d[1] ** 2) ** 0.5
+    start = 1 - params["size"] / 100
+    t = min(max((r - start) / (2**0.5 - start), 0.0), 1.0)
+    m = params["amount"] / 100 * t * t * (3 - 2 * t)
+    if m < 0:
+        return [v * (1 + m) for v in color]
+    return [v + (1 - v) * m for v in color]
+
+
 # The bases neighborhood operations' cases use, in stops of log2
 # luminance: deep shadow, middle gray, a bright sky, and above white.
 BASES = [-8, -2.5, -0.5, 0.5]
@@ -126,6 +161,8 @@ OPERATIONS = {
     ),
     "seura.contrast": (contrast, [{"amount": amount} for amount in (-100, -40, 25, 60, 100)]),
     "seura.saturation": (saturation, [{"amount": amount} for amount in (-100, -50, 30, 60, 100)]),
+    "seura.blackAndWhite": (black_and_white, [{"strength": strength} for strength in (25, 60, 100)]),
+    "seura.sepia": (sepia, [{"strength": strength} for strength in (25, 60, 100)]),
 }
 
 # Neighborhood operations: their formula takes the pixel's base as well,
@@ -134,6 +171,24 @@ NEIGHBORHOOD = {
     "seura.highlights": (highlights, NEIGHBORHOOD_AMOUNTS),
     "seura.shadows": (shadows, NEIGHBORHOOD_AMOUNTS),
 }
+
+
+# Operations measured on the cropped frame: their formula takes the
+# pixel's position as well, as fractions of the frame from its top left
+# corner, and each case gives it.
+POSITIONAL = {
+    "seura.vignette": (
+        vignette,
+        [
+            {"amount": amount, "size": size}
+            for amount, size in ((-100, 0), (-25, 60), (40, 30), (100, 100))
+        ],
+    ),
+}
+
+# The positions their cases use: the center, toward an edge, past where a
+# small vignette starts, and near a corner.
+POSITIONS = [[0.5, 0.5], [0.8125, 0.5], [0.125, 0.875], [0.984375, 0.015625]]
 
 
 def rounded(color):
@@ -147,6 +202,14 @@ def build(operation):
             {"params": params, "base": base, "input": color, "output": rounded(formula(color, params, base))}
             for params in cases
             for base in BASES
+            for color in INPUTS
+        ]
+    elif operation in POSITIONAL:
+        formula, cases = POSITIONAL[operation]
+        cases = [
+            {"params": params, "position": position, "input": color, "output": rounded(formula(color, params, position))}
+            for params in cases
+            for position in POSITIONS
             for color in INPUTS
         ]
     else:
@@ -182,7 +245,7 @@ def geometry_text(name):
 
 def files():
     """Every vector file's path under tests/formulas/, and what makes its text."""
-    made = {f"{operation}.json": (text, operation) for operation in [*OPERATIONS, *NEIGHBORHOOD]}
+    made = {f"{operation}.json": (text, operation) for operation in [*OPERATIONS, *NEIGHBORHOOD, *POSITIONAL]}
     made.update({f"geometry/{name}.json": (geometry_text, name) for name in geometry.FILES})
     return made
 
