@@ -1,15 +1,19 @@
 """Test vectors for the formulas appendix (spec/formulas/).
 
-    python tools/formulas.py           write tests/formulas/<operation id>.json
+    python tools/formulas.py           write tests/formulas/<operation id>.json,
+                                       and tests/formulas/geometry/<name>.json
     python tools/formulas.py --check   exit 1 if any is out of date
 
 Each operation's formula is written here in double precision, exactly as its
-file in spec/formulas/ gives it, and run on a fixed set of input colors.
+file in spec/formulas/ gives it, and run on a fixed set of input colors. The
+geometry stage's are in geometry.py.
 """
 
 import json
 import sys
 from pathlib import Path
+
+import geometry
 
 ROOT = Path(__file__).resolve().parent.parent
 VECTORS = ROOT / "tests" / "formulas"
@@ -163,26 +167,46 @@ def text(operation):
     return head[:-2] + ',\n  "cases": [\n' + cases + "\n  ]\n}\n"
 
 
+def geometry_text(name):
+    """A geometry vector file: each case, and each row of the sampling
+    image, on a line of its own."""
+    vectors = geometry.build(name)
+    lists = [key for key in ("image", "cases") if key in vectors]
+    head = json.dumps({key: value for key, value in vectors.items() if key not in lists}, indent=2)
+    body = ",\n".join(
+        f'  "{key}": [\n' + ",\n".join(f"    {json.dumps(item)}" for item in vectors[key]) + "\n  ]"
+        for key in lists
+    )
+    return head[:-2] + ",\n" + body + "\n}\n"
+
+
+def files():
+    """Every vector file's path under tests/formulas/, and what makes its text."""
+    made = {f"{operation}.json": (text, operation) for operation in [*OPERATIONS, *NEIGHBORHOOD]}
+    made.update({f"geometry/{name}.json": (geometry_text, name) for name in geometry.FILES})
+    return made
+
+
 def stale():
-    """The vector files that don't match the formulas, or are missing."""
+    """The vector files that don't match the formulas, or are missing, by
+    their path under tests/formulas/ without .json."""
     return [
-        operation
-        for operation in [*OPERATIONS, *NEIGHBORHOOD]
-        if not (VECTORS / f"{operation}.json").exists()
-        or (VECTORS / f"{operation}.json").read_text(encoding="utf-8") != text(operation)
+        path.removesuffix(".json")
+        for path, (make, name) in files().items()
+        if not (VECTORS / path).exists() or (VECTORS / path).read_text(encoding="utf-8") != make(name)
     ]
 
 
 def main(argv):
     if argv == ["--check"]:
         out_of_date = stale()
-        for operation in out_of_date:
-            print(f"FAIL tests/formulas/{operation}.json is out of date; run tools/formulas.py")
+        for path in out_of_date:
+            print(f"FAIL tests/formulas/{path}.json is out of date; run tools/formulas.py")
         return 1 if out_of_date else 0
-    VECTORS.mkdir(parents=True, exist_ok=True)
-    for operation in [*OPERATIONS, *NEIGHBORHOOD]:
-        (VECTORS / f"{operation}.json").write_text(text(operation), encoding="utf-8", newline="\n")
-        print(f"wrote tests/formulas/{operation}.json")
+    for path, (make, name) in files().items():
+        (VECTORS / path).parent.mkdir(parents=True, exist_ok=True)
+        (VECTORS / path).write_text(make(name), encoding="utf-8", newline="\n")
+        print(f"wrote tests/formulas/{path}")
     return 0
 
 
