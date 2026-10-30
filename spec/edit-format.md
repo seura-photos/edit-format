@@ -118,7 +118,9 @@ The `operations` array holds the current edits. Each entry is an object:
 | 3. Tone and color | `seura.exposure`, `seura.whiteBalance`, `seura.highlights`, `seura.shadows`, `seura.contrast`, `seura.saturation` |
 | 4. Effects | `seura.blackAndWhite`, `seura.sepia`, `seura.vignette` |
 
-Geometry stays in this order because each step defines the frame for the next: the crop is drawn on the rotated, straightened photo. Red-eye comes before tone and color so it works on the original colors. Highlights and shadows come after exposure and white balance, so they work on the corrected brightness and color, and before contrast, which shapes the overall result.
+Geometry stays in this order because each step defines the frame for the next: the crop is drawn on the rotated, straightened photo.
+
+**Geometry frame and sampling.** The *oriented photo* is the photo with its orientation metadata and `seura.orient` applied: W × H pixels. Straightening turns the photo about the oriented photo's center, in pixels, so its shape isn't distorted, but doesn't change the frame: the crop is always a rectangle in the oriented photo's W × H frame, and its fractions keep their meaning at any angle. The crop's edges are rounded to whole pixels of that frame: left = round(x × W), top = round(y × H), and the output is round(width × W) × round(height × H) pixels. Geometry is a coordinate transform: the center of each output pixel is mapped back through the crop, the turn, and the orientation to a position in the photo as decoded, and the photo is sampled there with Catmull-Rom bicubic interpolation, as the [formulas appendix](formulas/README.md) defines. Catmull-Rom returns a pixel unchanged when the position falls on its center, so without straightening, geometry copies whole pixels exactly. Positions past the photo's edge, such as the corners a turned photo leaves uncovered, take the nearest edge pixel. Writers SHOULD keep the crop inside the turned photo so no such corners show; Seura Photos always does. A file with an angle and no crop is drawn as written. These rules define the full-resolution result; how an app scales it for the screen is up to the app. Red-eye comes before tone and color so it works on the original colors. Highlights and shadows come after exposure and white balance, so they work on the corrected brightness and color, and before contrast, which shapes the overall result.
 
 **Coordinates.** Positions and sizes are fractions from 0 to 1 of the frame they refer to, so edits stay valid at any resolution. Red-eye regions are measured on the photo after its orientation metadata is applied but before any geometry operations, so they stay on the eyes when the crop changes.
 
@@ -130,9 +132,9 @@ All core operations are version 1. When every setting of an operation is neutral
 
 | ID | Stage | Params | Meaning |
 | --- | --- | --- | --- |
-| `seura.orient` | Geometry | `rotate`: 0, 90, 180, or 270; `flipH`, `flipV`: true or false | Applied after the photo's own orientation metadata. Rotation is clockwise. |
-| `seura.straighten` | Geometry | `angle`: −45 to 45 degrees | Rotation about the center, clockwise positive. |
-| `seura.crop` | Geometry | `x`, `y`, `width`, `height`: 0 to 1; `aspect`: a ratio such as `"4:3"`, or null | A rectangle on the oriented, straightened photo. `aspect` records the user's ratio lock for editing and doesn't affect rendering. |
+| `seura.orient` | Geometry | `rotate`: 0, 90, 180, or 270; `flipH`, `flipV`: true or false | Applied after the photo's own orientation metadata. The photo is turned first, clockwise, then flipped as the turned photo is seen: `flipH` mirrors left to right, `flipV` top to bottom. Both flips together equal a half turn; writers SHOULD store that as `rotate` 180 more with both flips false, and readers MUST accept either. |
+| `seura.straighten` | Geometry | `angle`: −45 to 45 degrees | Rotation about the oriented photo's center, clockwise positive as seen on screen. The frame doesn't change (above). |
+| `seura.crop` | Geometry | `x`, `y`, `width`, `height`: 0 to 1; `aspect`: a ratio such as `"4:3"`, or null | A rectangle in the oriented photo's frame, over the straightened photo (above). `aspect` records the user's ratio lock for editing and doesn't affect rendering. |
 | `seura.redEye` | Retouch | `regions`: list of `{x, y, radius}`, 0 to 1 | Each circle darkens and desaturates red pupils inside it. Radius is a fraction of the photo's shorter side. |
 | `seura.exposure` | Tone | `ev`: −4 to 4 | Brightness in photographic stops: multiplies linear light by 2^ev. Apps may label it "Brightness"; Seura Photos does. |
 | `seura.whiteBalance` | Tone | `temperature`, `tint`: −100 to 100 | Relative shifts from the photo as shot: temperature toward blue or amber, tint toward green or magenta. |
@@ -250,7 +252,10 @@ A summary of the obligations, for implementers checking their work.
 | --- | --- |
 | Format name | Keep "Seura Edit Format" for v1; it can be renamed if other apps adopt it. |
 | Working color space | Linear light with Display P3 primaries, in floating point. |
-| Crop frame | Defined on the straightened photo, as Lightroom does; to be confirmed by a prototype. |
+| Crop frame | The oriented photo's own W × H rectangle, which straightening doesn't change, so a crop keeps its meaning at any angle and can grow back as the angle returns to zero. Uncovered corners take the nearest edge pixel. Rejected: the box around the turned photo (its fractions change with every angle) and the largest rectangle inside it (every angle change moves every crop). Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
+| Order within `seura.orient` | Turn, then flip as seen, so a flip pressed after a turn mirrors what's on screen. (A flip followed by a quarter turn equals the quarter turn followed by the other flip, which is how an app records a turn pressed after a flip.) Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
+| Sampling | Catmull-Rom bicubic, defined for the full-resolution result: sharper than bilinear for straightened photos, and exact for whole-pixel moves. |
+| Highlights and shadows guide | Built from the photo before any geometry, and looked up at each pixel's position in it, so rotation, straightening and crop never change it and no uncovered corners enter it. |
 | Fingerprint | Full SHA-256 of the file, computed rarely and cached. |
 | Tags and rating in history | Included, so they can be undone. |
 | Redo across sessions | Undone records stay in the history, marked `"undone": true`, until a new change discards them. Found missing while implementing Seura Photos' edit file library. |

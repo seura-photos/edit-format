@@ -4,7 +4,7 @@
 
 ## Building the guide
 
-The guide is built once for the whole photo, as oriented and straightened, before the crop, so changing the crop never changes how highlights and shadows look.
+The guide is built once for the whole photo as decoded, before any geometry operation (`seura.orient`, `seura.straighten`, `seura.crop`), and each output pixel looks it up at its position in that photo, the same position geometry samples the photo at. So rotating, flipping, straightening and cropping never change how highlights and shadows look, and the corners a turned photo leaves uncovered never enter the guide. (With straightening, the guide's square averages are square in the photo rather than on screen, a difference too small to see.)
 
 1. **The guide image.** The photo is scaled to fit 1024 pixels on its long side, or kept as it is if it's smaller. Any good downscaling filter will do. Seura scales the decoded photo with a Lanczos filter before converting it to the working space. Call its size W × H, and its long side L = max(W, H).
 2. **Log luminance.** For each pixel of the guide image, white balance (`seura.whiteBalance`) is applied with the file's settings, but not exposure. Then:
