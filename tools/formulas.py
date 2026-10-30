@@ -52,6 +52,9 @@ def red_eye(color, params, size, position):
     shorter = min(width, height)
     weight = 0.0
     for region in params["regions"]:
+        # A circle with no radius corrects nothing.
+        if region["radius"] <= 0:
+            continue
         center = (region["x"] * width, region["y"] * height)
         d = ((position[0] - center[0]) ** 2 + (position[1] - center[1]) ** 2) ** 0.5
         weight = max(weight, 1 - smoothstep(0.8, 1, d / (region["radius"] * shorter)))
@@ -216,6 +219,8 @@ RED_EYE_INPUTS = INPUTS + [
 # weight counts, not their sum.
 ONE = {"regions": [{"x": 0.25, "y": 0.5, "radius": 0.05}]}
 TWO = {"regions": [{"x": 0.25, "y": 0.5, "radius": 0.05}, {"x": 0.27, "y": 0.5, "radius": 0.05}]}
+# A circle with no radius, over the first: it changes nothing.
+EMPTY = {"regions": [{"x": 0.25, "y": 0.5, "radius": 0}]}
 RED_EYE_CASES = [
     (ONE, [100, 150]),
     (ONE, [110, 150]),
@@ -224,6 +229,7 @@ RED_EYE_CASES = [
     (TWO, [104, 150]),
     (TWO, [120, 150]),
     (TWO, [121.5, 150]),
+    (EMPTY, [100, 150]),
 ]
 RED_EYE_SIZE = [400, 300]
 
