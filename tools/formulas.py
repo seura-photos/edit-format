@@ -86,6 +86,30 @@ def saturation(color, params):
     return [y + (v - y) * s for v in color]
 
 
+def tone_position(base):
+    """A base as a position from black (0) to white (1), spaced roughly as
+    the eye sees tones."""
+    return min(max(2.0 ** base, 0.0), 1.0) ** (1 / 2.2)
+
+
+def highlights(color, params, base):
+    """seura.highlights: up to 2 stops at 100, weighed by x^3."""
+    gain = params["amount"] / 100 * 2 * tone_position(base) ** 3
+    return [v * 2.0 ** gain for v in color]
+
+
+def shadows(color, params, base):
+    """seura.shadows: up to 2 stops at 100, weighed by (1 - x)^3."""
+    gain = params["amount"] / 100 * 2 * (1 - tone_position(base)) ** 3
+    return [v * 2.0 ** gain for v in color]
+
+
+# The bases neighborhood operations' cases use, in stops of log2
+# luminance: deep shadow, middle gray, a bright sky, and above white.
+BASES = [-8, -2.5, -0.5, 0.5]
+
+NEIGHBORHOOD_AMOUNTS = [{"amount": amount} for amount in (-100, -50, 30, 100)]
+
 # Each operation: its formula, and the params its vectors use.
 OPERATIONS = {
     "seura.exposure": (exposure, [{"ev": ev} for ev in (-4, -1.5, 0.3, 1, 4)]),
@@ -100,23 +124,35 @@ OPERATIONS = {
     "seura.saturation": (saturation, [{"amount": amount} for amount in (-100, -50, 30, 60, 100)]),
 }
 
+# Neighborhood operations: their formula takes the pixel's base as well,
+# and each case gives it.
+NEIGHBORHOOD = {
+    "seura.highlights": (highlights, NEIGHBORHOOD_AMOUNTS),
+    "seura.shadows": (shadows, NEIGHBORHOOD_AMOUNTS),
+}
+
+
+def rounded(color):
+    return [float(f"{v:.9g}") for v in color]
+
 
 def build(operation):
-    formula, cases = OPERATIONS[operation]
-    return {
-        "operation": operation,
-        "version": 1,
-        "tolerance": TOLERANCE,
-        "cases": [
-            {
-                "params": params,
-                "input": color,
-                "output": [float(f"{v:.9g}") for v in formula(color, params)],
-            }
+    if operation in NEIGHBORHOOD:
+        formula, cases = NEIGHBORHOOD[operation]
+        cases = [
+            {"params": params, "base": base, "input": color, "output": rounded(formula(color, params, base))}
+            for params in cases
+            for base in BASES
+            for color in INPUTS
+        ]
+    else:
+        formula, cases = OPERATIONS[operation]
+        cases = [
+            {"params": params, "input": color, "output": rounded(formula(color, params))}
             for params in cases
             for color in INPUTS
-        ],
-    }
+        ]
+    return {"operation": operation, "version": 1, "tolerance": TOLERANCE, "cases": cases}
 
 
 def text(operation):
@@ -131,7 +167,7 @@ def stale():
     """The vector files that don't match the formulas, or are missing."""
     return [
         operation
-        for operation in OPERATIONS
+        for operation in [*OPERATIONS, *NEIGHBORHOOD]
         if not (VECTORS / f"{operation}.json").exists()
         or (VECTORS / f"{operation}.json").read_text(encoding="utf-8") != text(operation)
     ]
@@ -144,7 +180,7 @@ def main(argv):
             print(f"FAIL tests/formulas/{operation}.json is out of date; run tools/formulas.py")
         return 1 if out_of_date else 0
     VECTORS.mkdir(parents=True, exist_ok=True)
-    for operation in OPERATIONS:
+    for operation in [*OPERATIONS, *NEIGHBORHOOD]:
         (VECTORS / f"{operation}.json").write_text(text(operation), encoding="utf-8", newline="\n")
         print(f"wrote tests/formulas/{operation}.json")
     return 0
