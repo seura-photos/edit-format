@@ -39,6 +39,30 @@ INPUTS = [
 ]
 
 
+def smoothstep(a, b, x):
+    """0 at a and below, 1 at b and above, smoothly between."""
+    t = min(max((x - a) / (b - a), 0.0), 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def red_eye(color, params, size, position):
+    """seura.redEye: in the circles, how red a pixel is decides how far its
+    red comes down to the larger of its green and blue."""
+    width, height = size
+    shorter = min(width, height)
+    weight = 0.0
+    for region in params["regions"]:
+        center = (region["x"] * width, region["y"] * height)
+        d = ((position[0] - center[0]) ** 2 + (position[1] - center[1]) ** 2) ** 0.5
+        weight = max(weight, 1 - smoothstep(0.8, 1, d / (region["radius"] * shorter)))
+    r, g, b = color
+    m = max(g, b)
+    if weight == 0 or r <= 0 or r <= m:
+        return list(color)
+    k = smoothstep(0.7, 0.9, (r - m) / r)
+    return [r + (m - r) * weight * k, g, b]
+
+
 def exposure(color, params):
     """seura.exposure: every channel times 2^ev."""
     scale = 2.0 ** params["ev"]
@@ -173,6 +197,36 @@ NEIGHBORHOOD = {
 }
 
 
+# Red-eye's inputs: the usual colors, then red pupils of several shades
+# (redness 0.875 to 0.94, fully or nearly fully corrected), a reddish skin
+# (0.75, a little) and a brown iris (0.625, not at all).
+RED_EYE_INPUTS = INPUTS + [
+    [0.5, 0.0234375, 0.03125],
+    [0.25, 0.015625, 0.0234375],
+    [0.75, 0.0625, 0.09375],
+    [0.375, 0.046875, 0.03125],
+    [0.1875, 0.046875, 0.015625],
+    [0.125, 0.046875, 0.0234375],
+]
+
+# Red-eye's cases: the photo's upright size and a pixel's position in it, in
+# its pixels, with the regions. One circle centered at (100, 150) with a
+# radius of 15 pixels: at its center, inside its soft edge, halfway through
+# the edge, and outside. Then two overlapping circles, where the larger
+# weight counts, not their sum.
+ONE = {"regions": [{"x": 0.25, "y": 0.5, "radius": 0.05}]}
+TWO = {"regions": [{"x": 0.25, "y": 0.5, "radius": 0.05}, {"x": 0.27, "y": 0.5, "radius": 0.05}]}
+RED_EYE_CASES = [
+    (ONE, [100, 150]),
+    (ONE, [110, 150]),
+    (ONE, [113.5, 150]),
+    (ONE, [116, 150]),
+    (TWO, [104, 150]),
+    (TWO, [120, 150]),
+    (TWO, [121.5, 150]),
+]
+RED_EYE_SIZE = [400, 300]
+
 # Operations measured on the cropped frame: their formula takes the
 # pixel's position as well, as fractions of the frame from its top left
 # corner, and each case gives it.
@@ -203,6 +257,18 @@ def build(operation):
             for params in cases
             for base in BASES
             for color in INPUTS
+        ]
+    elif operation == "seura.redEye":
+        cases = [
+            {
+                "params": params,
+                "size": RED_EYE_SIZE,
+                "position": position,
+                "input": color,
+                "output": rounded(red_eye(color, params, RED_EYE_SIZE, position)),
+            }
+            for params, position in RED_EYE_CASES
+            for color in RED_EYE_INPUTS
         ]
     elif operation in POSITIONAL:
         formula, cases = POSITIONAL[operation]
@@ -245,7 +311,7 @@ def geometry_text(name):
 
 def files():
     """Every vector file's path under tests/formulas/, and what makes its text."""
-    made = {f"{operation}.json": (text, operation) for operation in [*OPERATIONS, *NEIGHBORHOOD, *POSITIONAL]}
+    made = {f"{operation}.json": (text, operation) for operation in ["seura.redEye", *OPERATIONS, *NEIGHBORHOOD, *POSITIONAL]}
     made.update({f"geometry/{name}.json": (geometry_text, name) for name in geometry.FILES})
     return made
 

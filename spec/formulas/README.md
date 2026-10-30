@@ -34,7 +34,7 @@ with `absolute` 0.0001 and `relative` 0.001 throughout. That's far finer than an
 
 The geometry stage's vectors are positions and a small image, not colors alone, and are in `tests/formulas/geometry/`, as [geometry.md](geometry.md) describes.
 
-An operation measured on the cropped frame, such as the vignette, depends on where the pixel is: its cases each give that `position`, as fractions of the frame, beside the input color.
+An operation measured on the cropped frame, such as the vignette, depends on where the pixel is: its cases each give that `position`, as fractions of the frame, beside the input color. Red-eye's depend on where the pixel is in the upright photo: its cases give the photo's `size` and the `position`, in its pixels.
 
 A neighborhood operation's output also depends on the pixel's surroundings, through its base from the [luminance guide](luminance-guide.md). Its cases each give that `base`, in stops of log2 luminance, beside the input color, so the formula can be checked on its own. Reference images for checking a whole guide are planned for 1.0.
 
@@ -45,6 +45,7 @@ A neighborhood operation's output also depends on the pixel's surroundings, thro
 | Operation | File |
 | --- | --- |
 | `seura.orient`, `seura.straighten`, `seura.crop` | [geometry.md](geometry.md), with Catmull-Rom sampling |
+| `seura.redEye` | [seura.redEye.md](seura.redEye.md) |
 | `seura.exposure` | [seura.exposure.md](seura.exposure.md) |
 | `seura.whiteBalance` | [seura.whiteBalance.md](seura.whiteBalance.md) |
 | `seura.highlights` | [seura.highlights.md](seura.highlights.md), with the [luminance guide](luminance-guide.md) |
