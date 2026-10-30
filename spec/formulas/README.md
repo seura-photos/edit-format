@@ -34,6 +34,8 @@ with `absolute` 0.0001 and `relative` 0.001 throughout. That's far finer than an
 
 The geometry stage's vectors are positions and a small image, not colors alone, and are in `tests/formulas/geometry/`, as [geometry.md](geometry.md) describes.
 
+An operation measured on the cropped frame, such as the vignette, depends on where the pixel is: its cases each give that `position`, as fractions of the frame, beside the input color.
+
 A neighborhood operation's output also depends on the pixel's surroundings, through its base from the [luminance guide](luminance-guide.md). Its cases each give that `base`, in stops of log2 luminance, beside the input color, so the formula can be checked on its own. Reference images for checking a whole guide are planned for 1.0.
 
 `python tools/formulas.py` regenerates the vectors after a formula changes, and `python tools/check.py --self-test` fails if they're out of date.
@@ -49,3 +51,6 @@ A neighborhood operation's output also depends on the pixel's surroundings, thro
 | `seura.shadows` | [seura.shadows.md](seura.shadows.md), with the [luminance guide](luminance-guide.md) |
 | `seura.contrast` | [seura.contrast.md](seura.contrast.md) |
 | `seura.saturation` | [seura.saturation.md](seura.saturation.md) |
+| `seura.blackAndWhite` | [seura.blackAndWhite.md](seura.blackAndWhite.md) |
+| `seura.sepia` | [seura.sepia.md](seura.sepia.md) |
+| `seura.vignette` | [seura.vignette.md](seura.vignette.md) |
