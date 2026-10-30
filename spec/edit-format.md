@@ -132,7 +132,7 @@ All core operations are version 1. When every setting of an operation is neutral
 
 | ID | Stage | Params | Meaning |
 | --- | --- | --- | --- |
-| `seura.orient` | Geometry | `rotate`: 0, 90, 180, or 270; `flipH`, `flipV`: true or false | Applied after the photo's own orientation metadata. Rotation is clockwise. |
+| `seura.orient` | Geometry | `rotate`: 0, 90, 180, or 270; `flipH`, `flipV`: true or false | Applied after the photo's own orientation metadata. The photo is turned first, clockwise, then flipped as the turned photo is seen: `flipH` mirrors left to right, `flipV` top to bottom. Both flips together equal a half turn; writers SHOULD store that as `rotate` 180 more with both flips false, and readers MUST accept either. |
 | `seura.straighten` | Geometry | `angle`: −45 to 45 degrees | Rotation about the oriented photo's center, clockwise positive as seen on screen. The frame doesn't change (above). |
 | `seura.crop` | Geometry | `x`, `y`, `width`, `height`: 0 to 1; `aspect`: a ratio such as `"4:3"`, or null | A rectangle in the oriented photo's frame, over the straightened photo (above). `aspect` records the user's ratio lock for editing and doesn't affect rendering. |
 | `seura.redEye` | Retouch | `regions`: list of `{x, y, radius}`, 0 to 1 | Each circle darkens and desaturates red pupils inside it. Radius is a fraction of the photo's shorter side. |
@@ -253,6 +253,7 @@ A summary of the obligations, for implementers checking their work.
 | Format name | Keep "Seura Edit Format" for v1; it can be renamed if other apps adopt it. |
 | Working color space | Linear light with Display P3 primaries, in floating point. |
 | Crop frame | The oriented photo's own W × H rectangle, which straightening doesn't change, so a crop keeps its meaning at any angle and can grow back as the angle returns to zero. Uncovered corners take the nearest edge pixel. Rejected: the box around the turned photo (its fractions change with every angle) and the largest rectangle inside it (every angle change moves every crop). Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
+| Order within `seura.orient` | Turn, then flip as seen, so a flip pressed after a turn mirrors what's on screen. (A flip followed by a quarter turn equals the quarter turn followed by the other flip, which is how an app records a turn pressed after a flip.) Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
 | Sampling | Catmull-Rom bicubic, defined for the full-resolution result: sharper than bilinear for straightened photos, and exact for whole-pixel moves. |
 | Highlights and shadows guide | Built from the photo before any geometry, and looked up at each pixel's position in it, so rotation, straightening and crop never change it and no uncovered corners enter it. |
 | Fingerprint | Full SHA-256 of the file, computed rarely and cached. |
