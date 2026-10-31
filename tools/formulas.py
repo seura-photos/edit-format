@@ -1,12 +1,14 @@
 """Test vectors for the formulas appendix (spec/formulas/).
 
     python tools/formulas.py           write tests/formulas/<operation id>.json,
-                                       and tests/formulas/geometry/<name>.json
+                                       tests/formulas/geometry/<name>.json,
+                                       and tests/reference/<name>.json
     python tools/formulas.py --check   exit 1 if any is out of date
 
 Each operation's formula is written here in double precision, exactly as its
 file in spec/formulas/ gives it, and run on a fixed set of input colors. The
-geometry stage's are in geometry.py.
+geometry stage's are in geometry.py, and the reference images, which run them
+all, in reference.py.
 """
 
 import json
@@ -14,9 +16,10 @@ import sys
 from pathlib import Path
 
 import geometry
+import reference
 
 ROOT = Path(__file__).resolve().parent.parent
-VECTORS = ROOT / "tests" / "formulas"
+TESTS = ROOT / "tests"
 
 # spec/formulas/README.md, "Test vectors".
 TOLERANCE = {"absolute": 0.0001, "relative": 0.001}
@@ -316,19 +319,23 @@ def geometry_text(name):
 
 
 def files():
-    """Every vector file's path under tests/formulas/, and what makes its text."""
-    made = {f"{operation}.json": (text, operation) for operation in ["seura.redEye", *OPERATIONS, *NEIGHBORHOOD, *POSITIONAL]}
-    made.update({f"geometry/{name}.json": (geometry_text, name) for name in geometry.FILES})
+    """Every generated file's path under tests/, and what makes its text."""
+    made = {
+        f"formulas/{operation}.json": (text, operation)
+        for operation in ["seura.redEye", *OPERATIONS, *NEIGHBORHOOD, *POSITIONAL]
+    }
+    made.update({f"formulas/geometry/{name}.json": (geometry_text, name) for name in geometry.FILES})
+    made.update({f"reference/{path}": (lambda make: make(), make) for path, make in reference.files().items()})
     return made
 
 
 def stale():
-    """The vector files that don't match the formulas, or are missing, by
-    their path under tests/formulas/ without .json."""
+    """The generated files that don't match the formulas, or are missing,
+    by their path under tests/ without .json."""
     return [
         path.removesuffix(".json")
         for path, (make, name) in files().items()
-        if not (VECTORS / path).exists() or (VECTORS / path).read_text(encoding="utf-8") != make(name)
+        if not (TESTS / path).exists() or (TESTS / path).read_text(encoding="utf-8") != make(name)
     ]
 
 
@@ -336,12 +343,12 @@ def main(argv):
     if argv == ["--check"]:
         out_of_date = stale()
         for path in out_of_date:
-            print(f"FAIL tests/formulas/{path}.json is out of date; run tools/formulas.py")
+            print(f"FAIL tests/{path}.json is out of date; run tools/formulas.py")
         return 1 if out_of_date else 0
     for path, (make, name) in files().items():
-        (VECTORS / path).parent.mkdir(parents=True, exist_ok=True)
-        (VECTORS / path).write_text(make(name), encoding="utf-8", newline="\n")
-        print(f"wrote tests/formulas/{path}")
+        (TESTS / path).parent.mkdir(parents=True, exist_ok=True)
+        (TESTS / path).write_text(make(name), encoding="utf-8", newline="\n")
+        print(f"wrote tests/{path}")
     return 0
 
 

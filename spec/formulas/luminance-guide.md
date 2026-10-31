@@ -40,4 +40,4 @@ Using the pixel's own l, not the guide's, keeps edges as sharp as the photo howe
 
 `seura.highlights` then changes the pixel and the base by its gain (see [seura.highlights.md](seura.highlights.md)), and `seura.shadows` uses the base as `seura.highlights` left it.
 
-Reference images with expected results, for checking a whole guide, are planned for the specification's 1.0 release.
+The [reference images](README.md#reference-images) check a whole guide: `highlights-shadows`, `geometry` and `everything` use it.
