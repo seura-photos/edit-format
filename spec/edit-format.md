@@ -124,7 +124,14 @@ Geometry stays in this order because each step defines the frame for the next: t
 
 **Coordinates.** Positions and sizes are fractions from 0 to 1 of the frame they refer to, so edits stay valid at any resolution. Red-eye regions are measured on the photo after its orientation metadata is applied but before any geometry operations, so they stay on the eyes when the crop changes.
 
-**Color.** Tone and color operations work on linear-light values with Display P3 primaries, in floating point, which covers the wide color of modern phone photos. Precise transforms are defined with the reference implementation.
+**Color.** Tone and color operations work on linear-light values with Display P3 primaries, in floating point, which covers the wide color of modern phone photos. The exact formulas are in the [formulas appendix](formulas/README.md).
+
+**Decoding into the working space.** The format starts from the photo in the working space; how a reader gets it there is its own, but two readers that decode differently draw the same file differently. So readers SHOULD:
+
+- apply the photo's orientation metadata, giving the upright photo that red-eye regions and the luminance guide are measured on;
+- convert colors with the photo's own color information: its embedded ICC profile, or the color description a format carries instead (such as HEIC's or PNG's), and sRGB when there's none;
+- convert in floating point without clipping, so colors outside Display P3 keep components below 0 or above 1, as the appendix expects;
+- for a photo with an HDR gain map, render its standard (SDR) image in format 1.0. A later minor version may say how gain maps take part.
 
 ## Core operations
 
@@ -253,6 +260,7 @@ A summary of the obligations, for implementers checking their work.
 | Format name | Keep "Seura Edit Format" for v1; it can be renamed if other apps adopt it. |
 | Working color space | Linear light with Display P3 primaries, in floating point. |
 | Crop frame | The oriented photo's own W × H rectangle, which straightening doesn't change, so a crop keeps its meaning at any angle and can grow back as the angle returns to zero. Uncovered corners take the nearest edge pixel. Rejected: the box around the turned photo (its fractions change with every angle) and the largest rectangle inside it (every angle change moves every crop). Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
+| Decoding into the working space | Recommended (SHOULD), not required: the reference images start from the working space, so conformance doesn't depend on decoding, and decoders differ by platform. Gain maps are left to a later minor version. Raised by Claude Code before 1.0; decided in the design session, 2026-10-30. |
 | Red-eye regions | At most 64 per photo: a group photo of 30 faces has 60 eyes, and a fixed limit lets every reader, including a GPU with a fixed-size uniform block, draw every valid file. Raised by Claude Code while building M4; decided in the design session, 2026-10-30. |
 | Order within `seura.orient` | Turn, then flip as seen, so a flip pressed after a turn mirrors what's on screen. (A flip followed by a quarter turn equals the quarter turn followed by the other flip, which is how an app records a turn pressed after a flip.) Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
 | Sampling | Catmull-Rom bicubic, defined for the full-resolution result: sharper than bilinear for straightened photos, and exact for whole-pixel moves. |
