@@ -128,7 +128,7 @@ Geometry stays in this order because each step defines the frame for the next: t
 
 ## Core operations
 
-All core operations are version 1. When every setting of an operation is neutral, writers SHOULD remove the operation rather than store neutral values. The exact formulas, with test vectors, are in the [formulas appendix](formulas/README.md), added one operation at a time alongside the reference implementation.
+All core operations are version 1. When every setting of an operation is neutral, writers SHOULD remove the operation rather than store neutral values. The exact formulas, with test vectors and reference images, are in the [formulas appendix](formulas/README.md), written from the reference implementation.
 
 | ID | Stage | Params | Meaning |
 | --- | --- | --- | --- |

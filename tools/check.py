@@ -4,7 +4,9 @@
 Usage:
     python tools/check.py FILE...        validate the given files
     python tools/check.py --self-test    validate examples/ and tests/valid/ (must pass) and tests/invalid/ (must fail),
-                                         and confirm schema/1.x-reader.json and tests/formulas/ are up to date
+                                         check tests/reference/'s operations as an edit file holds them,
+                                         and confirm schema/1.x-reader.json, tests/formulas/ and
+                                         tests/reference/ are up to date
 
 Files whose formatVersion is exactly "1.0" are checked against schema/1.0.json; files with a higher
 1.x minor version against schema/1.x-reader.json (see the spec's "Reading a newer minor version").
@@ -115,6 +117,10 @@ def check_file(path):
         doc = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return [f"cannot read JSON: {exc}"]
+    return check_doc(doc)
+
+
+def check_doc(doc):
     validator, error = pick_validator(doc)
     if error:
         return [error]
@@ -134,11 +140,30 @@ def self_test():
     else:
         print("ok                       schema/1.x-reader.json is up to date")
     out_of_date = formulas.stale()
-    for operation in out_of_date:
+    for path in out_of_date:
         failed = True
-        print(f"FAIL                     tests/formulas/{operation}.json is out of date; run tools/formulas.py")
+        print(f"FAIL                     tests/{path}.json is out of date; run tools/formulas.py")
     if not out_of_date:
-        print("ok                       tests/formulas/ is up to date")
+        print("ok                       tests/formulas/ and tests/reference/ are up to date")
+    # Each reference image's operations, in an edit file for its photo.
+    for path in sorted((ROOT / "tests" / "reference").glob("*.json")):
+        case = json.loads(path.read_text(encoding="utf-8"))
+        if "operations" not in case:
+            continue
+        doc = {
+            "format": "seura-edit",
+            "formatVersion": "1.0",
+            "writer": {"app": "tools/reference.py", "version": "1.0"},
+            "modified": "2026-10-30T00:00:00Z",
+            "photo": {"file": "photo.json", "size": 1, "sha256": "0" * 64, "width": 64, "height": 48},
+            "operations": case["operations"],
+        }
+        errors = check_doc(doc)
+        status = "ok" if not errors else "FAIL (expected valid)"
+        failed |= bool(errors)
+        print(f"{status:24} tests/reference/{path.name}")
+        for e in errors:
+            print(f"    {e}")
     valid = sorted((ROOT / "examples").glob("*.json")) + sorted((ROOT / "tests" / "valid").glob("*.json"))
     for path in valid:
         errors = check_file(path)
