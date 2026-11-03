@@ -220,7 +220,7 @@ A preset is an edit file that isn't tied to a photo. It uses the same format wit
 - `photo`, `tags`, `rating`, and `history` are absent.
 - `operations` normally excludes the geometry and retouch stages, since crops and red-eye belong to a single photo, but MAY include them.
 
-Applying a preset replaces the target photo's operations in each stage the preset contains, and leaves the other stages alone. This is the same rule as pasting edits.
+Applying a preset replaces the target photo's operations in each stage the preset contains, and leaves the other stages alone. This is the same rule as pasting edits. Within a stage, an app replaces only the operations it understands, the core ones and any non-core ones it implements: a non-core operation it doesn't understand stays on the target as it is, and one in the preset or the copied edits isn't added, since the app can't tell how it would combine with the rest ("Extensibility and versioning").
 
 ## Rules for readers and writers
 
@@ -261,6 +261,7 @@ A summary of the obligations, for implementers checking their work.
 | Working color space | Linear light with Display P3 primaries, in floating point. |
 | Crop frame | The oriented photo's own W × H rectangle, which straightening doesn't change, so a crop keeps its meaning at any angle and can grow back as the angle returns to zero. Uncovered corners take the nearest edge pixel. Rejected: the box around the turned photo (its fractions change with every angle) and the largest rectangle inside it (every angle change moves every crop). Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
 | Decoding into the working space | Recommended (SHOULD), not required: the reference images start from the working space, so conformance doesn't depend on decoding, and decoders differ by platform. Gain maps are left to a later minor version. Raised by Claude Code before 1.0; decided in the design session, 2026-10-30. |
+| Pasting and presets with other apps' operations | An app replaces only the operations it understands in a stage, keeps the target's others, and doesn't add the source's. Raised by Claude Code while planning M5; decided in the design session, 2026-11-03. |
 | Red-eye regions | At most 64 per photo: a group photo of 30 faces has 60 eyes, and a fixed limit lets every reader, including a GPU with a fixed-size uniform block, draw every valid file. Raised by Claude Code while building M4; decided in the design session, 2026-10-30. |
 | Order within `seura.orient` | Turn, then flip as seen, so a flip pressed after a turn mirrors what's on screen. (A flip followed by a quarter turn equals the quarter turn followed by the other flip, which is how an app records a turn pressed after a flip.) Proposed by Claude Code while building M4; decided in the design session, 2026-10-29. |
 | Sampling | Catmull-Rom bicubic, defined for the full-resolution result: sharper than bilinear for straightened photos, and exact for whole-pixel moves. |
